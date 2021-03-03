@@ -21,7 +21,6 @@ import android.os.BatteryManager;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
-import android.view.View;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -36,13 +35,17 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
+import es.studium.pmdm_practica7_googlemapssensores.controllers.BDController;
+import es.studium.pmdm_practica7_googlemapssensores.modelos.Sensores;
+
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener{
 
     private GoogleMap mapa;
+    private BDController bdController;
     String Cordenadas;
-    double Latitud;
-    double Longitud;
-    float battery;
+    String Latitud;
+    String Longitud;
+    String battery;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,6 +62,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             //Obtenemos el mapa de forma asíncrona (notificará cuando esté lista)
             SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.mapa);
             mapFragment.getMapAsync((OnMapReadyCallback) this);
+            //Crear el controlador
+            bdController = new BDController(MainActivity.this);
+
             //Ejecutamos el metodo
             locationStart();
         }
@@ -82,8 +88,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);
             return;
         }
+
         //Actualizamos la localizacion cada 5 minutos
-        mlocManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 300000, 0, (LocationListener) Local);
+        //mlocManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 300000, 0, (LocationListener) Local);
         mlocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 300000, 0, (LocationListener) Local);
 
     }
@@ -112,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             try
             {
                 Geocoder geocoder = new Geocoder(this, Locale.getDefault());
-                List<Address> list = geocoder.getFromLocation(Latitud, Longitud, 1);
+                List<Address> list = geocoder.getFromLocation(loc.getLatitude(), loc.getLongitude(), 1);
                 if (!list.isEmpty())
                 {
                     //Optenemos el nivel de bateria
@@ -121,20 +128,28 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     int level = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
                     int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
 
-                    battery = (level / (float)scale)*100;
+                    battery = String.valueOf((level / (int)scale)*100);
                     //Ponemos Marcador en posicion actual
-                    final LatLng MiPosicionActual = new LatLng(Latitud, Longitud);
+                    LatLng MiPosicionActual = new LatLng(loc.getLatitude(), loc.getLongitude());
                     mapa.moveCamera(CameraUpdateFactory.newLatLngZoom(MiPosicionActual, 15));
                     mapa.addMarker(new MarkerOptions()
                             .position(MiPosicionActual)
                             .title(Cordenadas)
-                            .snippet(String.valueOf(battery)+"%")
+                            .snippet(String.valueOf((level / (int)scale)*100)+"%")
                             .icon(BitmapDescriptorFactory
                                     .fromResource(android.R.drawable.ic_menu_compass))
                             .anchor(0.5f, 0.5f));
 
-
-                    Toast.makeText(getApplicationContext(), R.string.mensajeGPSMarcador, Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(MainActivity.this, "Latitud: "+Latitud+" Longitud: "+Longitud+" Bateria: "+battery, Toast.LENGTH_LONG).show();
+                    Sensores sensores = new Sensores(Latitud, Longitud, battery);
+                    long id = bdController.nuevoSensor(sensores);
+                    if (id == -1) {
+                        //De alguna manera ocurrio un error
+                        Toast.makeText(MainActivity.this, "Error al guardar. Intenta de nuevo", Toast.LENGTH_SHORT).show();
+                    } else {
+                        //Terminar
+                        Toast.makeText(MainActivity.this, "Guardado correcto", Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
             catch (IOException e)
@@ -143,24 +158,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         }
     }
-    public class BasedeDatos extends SQLiteOpenHelper {
 
-        public BasedeDatos(@Nullable Context context, @Nullable String name, @Nullable SQLiteDatabase.CursorFactory factory, int version) {
-            super(context, name, factory, version);
-        }
-
-        @Override
-        public void onCreate(SQLiteDatabase db) {
-
-        }
-
-        @Override
-        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
-        }
-
-
-    }
     public class Localizacion implements LocationListener
     {
         MainActivity mainActivity;
@@ -177,8 +175,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         {
             // Este método se ejecuta cada vez que el GPS recibe nuevas coordenadas
             // debido a la detección de un cambio de ubicación
-            Latitud=loc.getLatitude();
-            Longitud=loc.getLongitude();
+            Latitud=String.valueOf(loc.getLatitude());
+            Longitud=String.valueOf(loc.getLongitude());
 
             Cordenadas = loc.getLatitude() + ", " + loc.getLongitude();
             this.mainActivity.setLocation(loc);
@@ -187,7 +185,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         public void onProviderDisabled(String provider)
         {
             // Este método se ejecuta cuando el GPS es desactivado
-            Toast.makeText(getApplicationContext(), Cordenadas, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), R.string.mensajeGPSDesactivado, Toast.LENGTH_SHORT).show();
         }
         @Override
         public void onProviderEnabled(String provider)
