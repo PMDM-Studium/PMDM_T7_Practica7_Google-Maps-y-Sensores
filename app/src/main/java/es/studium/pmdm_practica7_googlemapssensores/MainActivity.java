@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -93,7 +92,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);
             return;
         }
-
         //Actualizamos la localizacion cada 5 minutos
         //mlocManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 300000, 0, (LocationListener) Local);
         mlocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 300000, 0, (LocationListener) Local);
@@ -155,7 +153,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             mapa.getUiSettings().setCompassEnabled(true);
         }
     }
-
     @Override public void onMapClick(LatLng puntoPulsado){
         mapa.addMarker(new MarkerOptions().position(puntoPulsado)
                 .icon(BitmapDescriptorFactory
@@ -210,13 +207,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     Log.d("debug", "LocationProvider.AVAILABLE");
                     break;
             }
-        }
-    }
-
-    BroadcastReceiver onBattery=new BroadcastReceiver() {
-        public void onReceive(Context context, Intent intent) {
-            int pct= 100 * intent.getIntExtra(BatteryManager.EXTRA_LEVEL, 1)
-                    / intent.getIntExtra(BatteryManager.EXTRA_SCALE, 1);
         }
     };
     public void refrescarListaSensores() {
