@@ -3,18 +3,18 @@ package es.studium.pmdm_practica7_googlemapssensores.modelos;
 public class Sensores {
     private String Latitud;
     private String Longitud;
-    private int battery;
+    private String battery;
 
     private long id; // El ID de la BD
 
-    public Sensores(String Latitud, String Longitud, int battery) {
+    public Sensores(String Latitud, String Longitud, String battery) {
         this.Latitud = Latitud;
         this.Longitud = Longitud;
         this.battery = battery;
     }
 
     // Constructor para cuando instanciamos desde la BD
-    public Sensores(String Latitud, String Longitud, int battery, long id) {
+    public Sensores(String Latitud, String Longitud, String battery, long id) {
         this.Latitud = Latitud;
         this.Longitud = Longitud;
         this.battery = battery;
@@ -37,11 +37,11 @@ public class Sensores {
         Longitud = longitud;
     }
 
-    public int getBattery() {
+    public String getBattery() {
         return battery;
     }
 
-    public void setBattery(int battery) {
+    public void setBattery(String battery) {
         this.battery = battery;
     }
 

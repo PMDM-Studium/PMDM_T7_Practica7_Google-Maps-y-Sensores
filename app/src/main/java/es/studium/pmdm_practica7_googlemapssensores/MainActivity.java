@@ -40,14 +40,13 @@ import es.studium.pmdm_practica7_googlemapssensores.modelos.Sensores;
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener{
 
     private List<Sensores> listaSensores;
-    private AdaptadorSensores adaptadorSensores;
     private GoogleMap mapa;
     private BDController bdController;
     LatLng MiPosicionActual;
     String Cordenadas;
     String Latitud;
     String Longitud;
-    int battery;
+    String battery;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,10 +67,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             //Crear el controlador
             bdController = new BDController(MainActivity.this);
 
-            // Por defecto es una lista vacía,
-            // se la ponemos al adaptador y configuramos el recyclerview
+            // Por defecto es una lista vacía
             listaSensores = new ArrayList<>();
-            adaptadorSensores = new AdaptadorSensores(listaSensores);
 
             //Ejecutamos el metodo
             locationStart();
@@ -103,6 +100,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
     public void setLocation(Location loc)
     {
+        refrescarListaSensores();
         //Obtener la dirección de la calle a partir de la latitud y la longitud
         if (loc.getLatitude() != 0.0 && loc.getLongitude() != 0.0)
         {
@@ -115,12 +113,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     //Optenemos el nivel de bateria
                     IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
                     Intent batteryStatus = registerReceiver(null, ifilter);
-                    int level = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
-                    int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
-
-                    battery = (level / scale)*100;
-
-                    refrescarListaSensores();
+                    Double level = Double.valueOf(batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1));
+                    Double scale = Double.valueOf(batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1));
+                    Double bateria = (level/scale)*100;
+                    battery = String.valueOf(bateria);
 
                     //Ponemos Marcador en posicion actual
                     MiPosicionActual = new LatLng(loc.getLatitude(), loc.getLongitude());
@@ -128,10 +124,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     mapa.addMarker(new MarkerOptions()
                             .position(MiPosicionActual)
                             .title(Cordenadas)
-                            .snippet(String.valueOf((level / scale)*100)+"%")
+                            .snippet(battery+" %")
                             .icon(BitmapDescriptorFactory
-                                    .fromResource(android.R.drawable.ic_menu_compass))
-                            .anchor(0.5f, 0.5f));
+                                    .fromResource(R.mipmap.ic_marcadorpasitospersonalizado_round))
+                                    .anchor(0f, 1f));
+//                                    .fromResource(android.R.drawable.ic_menu_myplaces))
+//                            .anchor(0.5f, 0.5f));
 
                     //Guardamos en la BD
                     Sensores sensores = new Sensores(Latitud, Longitud, battery);
@@ -248,8 +246,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         .title(corde)
                         .snippet(bate+"%")
                         .icon(BitmapDescriptorFactory
-                                .fromResource(android.R.drawable.ic_menu_compass))
-                        .anchor(0.5f, 0.5f));
+                                .fromResource(R.mipmap.ic_marcadorpasitospersonalizado_round))
+                        .anchor(0f, 1f));
+//                                    .fromResource(android.R.drawable.ic_menu_myplaces))
+//                            .anchor(0.5f, 0.5f));
                 //Toast.makeText(MainActivity.this, lista, Toast.LENGTH_SHORT).show();
             }
         }

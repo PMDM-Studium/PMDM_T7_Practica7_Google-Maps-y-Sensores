@@ -60,7 +60,7 @@ lista vacía
 // Latitud, Longitud, battery, id entonces la Latitud es 0, Longitud 1, battery 2 e id es 3
             String txtLatitud = cursor.getString(0);
             String txtLongitud = cursor.getString(1);
-            int txtbattery = cursor.getInt(2);
+            String txtbattery = cursor.getString(2);
             long idFrase = cursor.getLong(3);
             Sensores sensoresDB = new Sensores(txtLatitud, txtLongitud, txtbattery, idFrase);
             sensores.add(sensoresDB);

@@ -18,7 +18,7 @@ public class AyudanteBaseDeDatos extends SQLiteOpenHelper
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(String.format("CREATE TABLE IF NOT EXISTS %s(id INTEGER PRIMARY KEY AUTOINCREMENT, "+
-                "Latitud TEXT, Longitud TEXT, battery INTEGER)", NOMBRE_TABLA_FRASES));
+                "Latitud TEXT, Longitud TEXT, battery TEXT)", NOMBRE_TABLA_FRASES));
     }
 
     @Override
