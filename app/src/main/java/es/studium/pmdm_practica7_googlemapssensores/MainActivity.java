@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //Comprobamos los permisos de GPS, si no los tiene nos preguntara para dar permisos
+        //Comprobamos los permisos de GPS, si no los tiene nos preguntará para dar permisos
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
                 PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             // Por defecto es una lista vacía
             listaSensores = new ArrayList<>();
 
-            //Ejecutamos el metodo
+            //Ejecutamos el método
             locationStart();
         }
     }
@@ -92,8 +92,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,}, 1000);
             return;
         }
-        //Actualizamos la localizacion cada 5 minutos
-        //mlocManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 300000, 0, (LocationListener) Local);
+        //Actualizamos la localización cada 5 minutos
         mlocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 300000, 0, (LocationListener) Local);
     }
     public void setLocation(Location loc)
@@ -108,10 +107,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 List<Address> list = geocoder.getFromLocation(loc.getLatitude(), loc.getLongitude(), 1);
                 if (!list.isEmpty())
                 {
-                    //Optenemos el nivel de bateria
+                    //Obtenemos el nivel de batería
                     nivelBateria();
 
-                    //Ponemos Marcador en posicion actual
+                    //Ponemos Marcador en posición actual
                     MiPosicionActual = new LatLng(loc.getLatitude(), loc.getLongitude());
                     mapa.moveCamera(CameraUpdateFactory.newLatLngZoom(MiPosicionActual, 15));
                     mapa.addMarker(new MarkerOptions()
@@ -120,16 +119,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             .snippet(battery+" %")
                             .icon(BitmapDescriptorFactory
                                     .fromResource(R.mipmap.ic_marcadorpasitospersonalizado_round))
-                                    .anchor(0.5f, 0.5f));
-//                                    .fromResource(android.R.drawable.ic_menu_myplaces))
-//                            .anchor(0.5f, 0.5f));
+                                    .anchor(0.5f, 1f));
 
                     //Guardamos en la BD
                     Sensores sensores = new Sensores(Latitud, Longitud, battery);
                     //Comprobamos si se ha guardado
                     long id = bdController.nuevoSensor(sensores);
                     if (id == -1) {
-                        //De alguna manera ocurrio un error
+                        //De alguna manera ocurrió  un error
                         Toast.makeText(MainActivity.this, R.string.errorGuardar, Toast.LENGTH_SHORT).show();
                     } else {
                         //Terminar
@@ -224,7 +221,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 Double longi = Double.valueOf(separador[1]);
                 String corde= lati+", "+longi;
                 String bate = separador[2];
-                //Ponemos Marcador en posicion Guardada
+                //Ponemos Marcador en posición Guardada
                 LatLng MiPosicionActual2 = new LatLng(lati, longi);
                 mapa.addMarker(new MarkerOptions()
                         .position(MiPosicionActual2)
@@ -232,19 +229,16 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         .snippet(bate+"%")
                         .icon(BitmapDescriptorFactory
                                 .fromResource(R.mipmap.ic_marcadorpasitospersonalizado_round))
-                        .anchor(0.5f, 0.5f));
-//                                    .fromResource(android.R.drawable.ic_menu_myplaces))
-//                            .anchor(0.5f, 0.5f));
-                //Toast.makeText(MainActivity.this, lista, Toast.LENGTH_SHORT).show();
+                        .anchor(0.5f, 1f));
             }
         }
     }
     public void nivelBateria(){
-        //Optenemos el nivel de bateria
+        //Obtenemos  el nivel de batería
         IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
         Intent batteryStatus = registerReceiver(null, ifilter);
-        Double level = Double.valueOf(batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1));
-        Double scale = Double.valueOf(batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1));
+        Double level = (double) batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+        Double scale = (double) batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
         Double bateria = (level/scale)*100;
         battery = String.valueOf(bateria);
     }

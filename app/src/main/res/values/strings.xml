@@ -5,6 +5,6 @@
         translatable="false">AIzaSyBFelk3l93pXWfoIJQaRWEn_WgegAQkIYA</string>
     <string name="mensajeGPSDesactivado">GPS Desactivado</string>
     <string name="mensajeGPSActivado">GPS Activado</string>
-    <string name="mensajeGPSMarcador">Añadiendo marcador</string>
+    <string name="mensajeGPSMarcador">Añadiendo marcador y guardando en la base de datos</string>
     <string name="errorGuardar">Error al guardar la base de datos</string>
 </resources>
