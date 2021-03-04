@@ -58,12 +58,12 @@ lista vacía
 
 // El 0 es el número de la columna, como seleccionamos
 // Latitud, Longitud, battery, id entonces la Latitud es 0, Longitud 1, battery 2 e id es 3
-            String Latitud = cursor.getString(0);
-            String Longitud = cursor.getString(1);
-            String battery = cursor.getString(2);
+            String txtLatitud = cursor.getString(0);
+            String txtLongitud = cursor.getString(1);
+            int txtbattery = cursor.getInt(2);
             long idFrase = cursor.getLong(3);
-            Sensores fraseObtenidaDeBD = new Sensores(Latitud, Longitud, battery, idFrase);
-            sensores.add(fraseObtenidaDeBD);
+            Sensores sensoresDB = new Sensores(txtLatitud, txtLongitud, txtbattery, idFrase);
+            sensores.add(sensoresDB);
         } while (cursor.moveToNext());
         // Fin del ciclo. Cerramos cursor y regresamos la lista de sensores :)
         cursor.close();

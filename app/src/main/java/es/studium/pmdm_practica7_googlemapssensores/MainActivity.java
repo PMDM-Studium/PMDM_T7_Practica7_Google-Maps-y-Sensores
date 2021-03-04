@@ -1,6 +1,6 @@
 package es.studium.pmdm_practica7_googlemapssensores;
 
-import androidx.annotation.Nullable;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
@@ -10,8 +10,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -32,6 +30,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -40,12 +39,15 @@ import es.studium.pmdm_practica7_googlemapssensores.modelos.Sensores;
 
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener{
 
+    private List<Sensores> listaSensores;
+    private AdaptadorSensores adaptadorSensores;
     private GoogleMap mapa;
     private BDController bdController;
+    LatLng MiPosicionActual;
     String Cordenadas;
     String Latitud;
     String Longitud;
-    String battery;
+    int battery;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,8 +64,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             //Obtenemos el mapa de forma asíncrona (notificará cuando esté lista)
             SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.mapa);
             mapFragment.getMapAsync((OnMapReadyCallback) this);
+
             //Crear el controlador
             bdController = new BDController(MainActivity.this);
+
+            // Por defecto es una lista vacía,
+            // se la ponemos al adaptador y configuramos el recyclerview
+            listaSensores = new ArrayList<>();
+            adaptadorSensores = new AdaptadorSensores(listaSensores);
 
             //Ejecutamos el metodo
             locationStart();
@@ -92,24 +100,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         //Actualizamos la localizacion cada 5 minutos
         //mlocManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 300000, 0, (LocationListener) Local);
         mlocManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 300000, 0, (LocationListener) Local);
-
-    }
-
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        mapa = googleMap;
-        mapa.setMapType(GoogleMap.MAP_TYPE_NORMAL); //Indicamos tipo de mapa
-        mapa.getUiSettings().setZoomControlsEnabled(true); //Pone los botones de aumentar y reducir tamaño
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            mapa.setMyLocationEnabled(true);
-            mapa.getUiSettings().setCompassEnabled(true);
-        }
-    }
-
-    @Override public void onMapClick(LatLng puntoPulsado){
-        mapa.addMarker(new MarkerOptions().position(puntoPulsado)
-                .icon(BitmapDescriptorFactory
-                        .defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
     }
     public void setLocation(Location loc)
     {
@@ -128,27 +118,62 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     int level = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
                     int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
 
-                    battery = String.valueOf((level / (int)scale)*100);
+                    battery = (level / scale)*100;
+
+                    //Rellenamos la lista con los datos de la BD
+                    listaSensores = bdController.obtenerSensor();
+                    //Si la lista no esta vacia
+                    if (listaSensores!=null){
+                        //Recorremos la lista
+                        for (int i=0; i<listaSensores.size();i++) {
+                            //Cogemos todos los valores de la lista a un string
+                            String lista = String.valueOf(listaSensores.get(i));
+                            //Separamos los valores de la lista separados por una coma
+                            String[] separador = lista.split(",");
+                            //Unimos para volver a separar
+                            String unir = separador[0]+separador[1];
+                            //Separamos por -
+                            String[] separador2 = unir.split("-");
+                            //Establecemos los valores por separado
+                            Double lati = Double.valueOf(separador2[0]);
+                            Double longi = Double.valueOf(separador2[1]);
+                            String corde= lati+", "+longi;
+                            String bate = separador2[2];
+                            //Ponemos Marcador en posicion Guardada
+                            LatLng MiPosicionActual2 = new LatLng(lati, longi);
+                            mapa.addMarker(new MarkerOptions()
+                                    .position(MiPosicionActual2)
+                                    .title(corde)
+                                    .snippet(bate+"%")
+                                    .icon(BitmapDescriptorFactory
+                                            .fromResource(android.R.drawable.ic_menu_compass))
+                                    .anchor(0.5f, 0.5f));
+                            //Toast.makeText(MainActivity.this, corde, Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+
                     //Ponemos Marcador en posicion actual
-                    LatLng MiPosicionActual = new LatLng(loc.getLatitude(), loc.getLongitude());
+                    MiPosicionActual = new LatLng(loc.getLatitude(), loc.getLongitude());
                     mapa.moveCamera(CameraUpdateFactory.newLatLngZoom(MiPosicionActual, 15));
                     mapa.addMarker(new MarkerOptions()
                             .position(MiPosicionActual)
                             .title(Cordenadas)
-                            .snippet(String.valueOf((level / (int)scale)*100)+"%")
+                            .snippet(String.valueOf((level / scale)*100)+"%")
                             .icon(BitmapDescriptorFactory
                                     .fromResource(android.R.drawable.ic_menu_compass))
                             .anchor(0.5f, 0.5f));
 
-                    //Toast.makeText(MainActivity.this, "Latitud: "+Latitud+" Longitud: "+Longitud+" Bateria: "+battery, Toast.LENGTH_LONG).show();
+                    //Guardamos en la BD
                     Sensores sensores = new Sensores(Latitud, Longitud, battery);
+                    //Comprobamos si se ha guardado
                     long id = bdController.nuevoSensor(sensores);
                     if (id == -1) {
                         //De alguna manera ocurrio un error
-                        Toast.makeText(MainActivity.this, "Error al guardar. Intenta de nuevo", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, R.string.errorGuardar, Toast.LENGTH_SHORT).show();
                     } else {
                         //Terminar
-                        Toast.makeText(MainActivity.this, "Guardado correcto", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, R.string.mensajeGPSMarcador, Toast.LENGTH_SHORT).show();
                     }
                 }
             }
@@ -158,7 +183,22 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         }
     }
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mapa = googleMap;
+        mapa.setMapType(GoogleMap.MAP_TYPE_NORMAL); //Indicamos tipo de mapa
+        mapa.getUiSettings().setZoomControlsEnabled(true); //Pone los botones de aumentar y reducir tamaño
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            mapa.setMyLocationEnabled(true);
+            mapa.getUiSettings().setCompassEnabled(true);
+        }
+    }
 
+    @Override public void onMapClick(LatLng puntoPulsado){
+        mapa.addMarker(new MarkerOptions().position(puntoPulsado)
+                .icon(BitmapDescriptorFactory
+                        .defaultMarker(BitmapDescriptorFactory.HUE_YELLOW)));
+    }
     public class Localizacion implements LocationListener
     {
         MainActivity mainActivity;
@@ -217,4 +257,37 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     / intent.getIntExtra(BatteryManager.EXTRA_SCALE, 1);
         }
     };
+    public void refrescarListaSensores() {
+        //Rellenamos la lista con los datos de la BD
+        listaSensores = bdController.obtenerSensor();
+        //Si la lista no esta vacia
+        if (listaSensores!=null){
+            //Recorremos la lista
+            for (int i=0; i<listaSensores.size();i++) {
+                //Cogemos todos los valores de la lista a un string
+                String lista = String.valueOf(listaSensores.get(i));
+                //Separamos los valores de la lista separados por una coma
+                String[] separador = lista.split(",");
+                //Unimos para volver a separar
+                String unir = separador[0]+separador[1];
+                //Separamos por -
+                String[] separador2 = unir.split("-");
+                //Establecemos los valores por separado
+                Double lati = Double.valueOf(separador2[0]);
+                Double longi = Double.valueOf(separador2[1]);
+                String corde= lati+", "+longi;
+                String bate = separador2[2];
+                //Ponemos Marcador en posicion Guardada
+                MiPosicionActual = new LatLng(lati, longi);
+                mapa.addMarker(new MarkerOptions()
+                        .position(MiPosicionActual)
+                        .title(corde)
+                        .snippet(bate+"%")
+                        .icon(BitmapDescriptorFactory
+                                .fromResource(android.R.drawable.ic_menu_compass))
+                        .anchor(0.5f, 0.5f));
+                Toast.makeText(MainActivity.this, corde, Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
 }
