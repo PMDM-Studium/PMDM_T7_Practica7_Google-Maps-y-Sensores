@@ -12,7 +12,7 @@ import es.studium.pmdm_practica7_googlemapssensores.modelos.Sensores;
 
 public class BDController {
     private AyudanteBaseDeDatos ayudanteBaseDeDatos;
-    private String NOMBRE_TABLA = "sensoresdb3";
+    private String NOMBRE_TABLA = "TbSensores";
 
     public BDController(Context contexto) {
         ayudanteBaseDeDatos = new AyudanteBaseDeDatos(contexto);

@@ -6,8 +6,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class AyudanteBaseDeDatos extends SQLiteOpenHelper
 {
-    private static final String NOMBRE_BASE_DE_DATOS = "sensoresdb3",
-            NOMBRE_TABLA_FRASES = "sensoresdb3";
+    private static final String NOMBRE_BASE_DE_DATOS = "PasitosApp",
+            NOMBRE_TABLA_FRASES = "TbSensores";
     private static final int VERSION_BASE_DE_DATOS = 1;
 
     public AyudanteBaseDeDatos(Context context)
