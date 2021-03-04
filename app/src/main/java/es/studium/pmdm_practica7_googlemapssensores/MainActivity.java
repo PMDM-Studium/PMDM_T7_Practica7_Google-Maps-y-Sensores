@@ -120,38 +120,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                     battery = (level / scale)*100;
 
-                    //Rellenamos la lista con los datos de la BD
-                    listaSensores = bdController.obtenerSensor();
-                    //Si la lista no esta vacia
-                    if (listaSensores!=null){
-                        //Recorremos la lista
-                        for (int i=0; i<listaSensores.size();i++) {
-                            //Cogemos todos los valores de la lista a un string
-                            String lista = String.valueOf(listaSensores.get(i));
-                            //Separamos los valores de la lista separados por una coma
-                            String[] separador = lista.split(",");
-                            //Unimos para volver a separar
-                            String unir = separador[0]+separador[1];
-                            //Separamos por -
-                            String[] separador2 = unir.split("-");
-                            //Establecemos los valores por separado
-                            Double lati = Double.valueOf(separador2[0]);
-                            Double longi = Double.valueOf(separador2[1]);
-                            String corde= lati+", "+longi;
-                            String bate = separador2[2];
-                            //Ponemos Marcador en posicion Guardada
-                            LatLng MiPosicionActual2 = new LatLng(lati, longi);
-                            mapa.addMarker(new MarkerOptions()
-                                    .position(MiPosicionActual2)
-                                    .title(corde)
-                                    .snippet(bate+"%")
-                                    .icon(BitmapDescriptorFactory
-                                            .fromResource(android.R.drawable.ic_menu_compass))
-                                    .anchor(0.5f, 0.5f));
-                            //Toast.makeText(MainActivity.this, corde, Toast.LENGTH_SHORT).show();
-                        }
-                    }
-
+                    refrescarListaSensores();
 
                     //Ponemos Marcador en posicion actual
                     MiPosicionActual = new LatLng(loc.getLatitude(), loc.getLongitude());
@@ -268,25 +237,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 String lista = String.valueOf(listaSensores.get(i));
                 //Separamos los valores de la lista separados por una coma
                 String[] separador = lista.split(",");
-                //Unimos para volver a separar
-                String unir = separador[0]+separador[1];
-                //Separamos por -
-                String[] separador2 = unir.split("-");
-                //Establecemos los valores por separado
-                Double lati = Double.valueOf(separador2[0]);
-                Double longi = Double.valueOf(separador2[1]);
+                Double lati = Double.valueOf(separador[0]);
+                Double longi = Double.valueOf(separador[1]);
                 String corde= lati+", "+longi;
-                String bate = separador2[2];
+                String bate = separador[2];
                 //Ponemos Marcador en posicion Guardada
-                MiPosicionActual = new LatLng(lati, longi);
+                LatLng MiPosicionActual2 = new LatLng(lati, longi);
                 mapa.addMarker(new MarkerOptions()
-                        .position(MiPosicionActual)
+                        .position(MiPosicionActual2)
                         .title(corde)
                         .snippet(bate+"%")
                         .icon(BitmapDescriptorFactory
                                 .fromResource(android.R.drawable.ic_menu_compass))
                         .anchor(0.5f, 0.5f));
-                Toast.makeText(MainActivity.this, corde, Toast.LENGTH_SHORT).show();
+                //Toast.makeText(MainActivity.this, lista, Toast.LENGTH_SHORT).show();
             }
         }
     }

@@ -55,6 +55,6 @@ public class Sensores {
 
     @Override
     public String toString() {
-        return Latitud+", "+Longitud+"-"+battery;
+        return Latitud+", "+Longitud+","+battery;
     }
 }
