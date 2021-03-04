@@ -111,12 +111,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 if (!list.isEmpty())
                 {
                     //Optenemos el nivel de bateria
-                    IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
-                    Intent batteryStatus = registerReceiver(null, ifilter);
-                    Double level = Double.valueOf(batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1));
-                    Double scale = Double.valueOf(batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1));
-                    Double bateria = (level/scale)*100;
-                    battery = String.valueOf(bateria);
+                    nivelBateria();
 
                     //Ponemos Marcador en posicion actual
                     MiPosicionActual = new LatLng(loc.getLatitude(), loc.getLongitude());
@@ -127,7 +122,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             .snippet(battery+" %")
                             .icon(BitmapDescriptorFactory
                                     .fromResource(R.mipmap.ic_marcadorpasitospersonalizado_round))
-                                    .anchor(0f, 1f));
+                                    .anchor(0.5f, 0.5f));
 //                                    .fromResource(android.R.drawable.ic_menu_myplaces))
 //                            .anchor(0.5f, 0.5f));
 
@@ -247,11 +242,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         .snippet(bate+"%")
                         .icon(BitmapDescriptorFactory
                                 .fromResource(R.mipmap.ic_marcadorpasitospersonalizado_round))
-                        .anchor(0f, 1f));
+                        .anchor(0.5f, 0.5f));
 //                                    .fromResource(android.R.drawable.ic_menu_myplaces))
 //                            .anchor(0.5f, 0.5f));
                 //Toast.makeText(MainActivity.this, lista, Toast.LENGTH_SHORT).show();
             }
         }
+    }
+    public void nivelBateria(){
+        //Optenemos el nivel de bateria
+        IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+        Intent batteryStatus = registerReceiver(null, ifilter);
+        Double level = Double.valueOf(batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1));
+        Double scale = Double.valueOf(batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1));
+        Double bateria = (level/scale)*100;
+        battery = String.valueOf(bateria);
     }
 }
